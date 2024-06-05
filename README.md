@@ -25,8 +25,9 @@ Jusqu'ici, tout va bien. Mais voici où ça se corse :
 
 Votre tâche est d'ajouter le nouveau type de produits "FLASHSALE" à notre système, en prenant en compte les particularités de sa disponibilité. Vous devrez également faire en sorte que l'ensemble du code soit facilement compréhensible et maintenable pour le prochain développeur qui travaillera sur ce projet.
 
-### Consignes:
+### Consignes JS:
 
+- Si probleme de version pnpm, utiliser `corepack enable pnpm` qui devrait automatiquement utiliser la bonne version
 - Ne pas modifier les classes qui ont un commentaire: `// WARN: Should not be changed during the exercise
 `
 - Créer migration `pnpm drizzle:generate`
