@@ -1,8 +1,6 @@
 import {
 	describe, it, expect, beforeEach,
 	afterEach,
-	beforeAll,
-	afterAll,
 } from 'vitest';
 import {type FastifyInstance} from 'fastify';
 import supertest from 'supertest';
@@ -18,15 +16,6 @@ import {
 } from '@/db/schema.js';
 import {type Database} from '@/db/type.js';
 import {buildFastify} from '@/fastify.js';
-import {setupIntegrationTest, teardownIntegrationTest} from '@/utils/test-utils/integration-test-setup.js';
-
-beforeAll(async () => {
-	await setupIntegrationTest();
-});
-
-afterAll(async () => {
-	await teardownIntegrationTest();
-});
 
 describe('MyController Integration Tests', () => {
 	let fastify: FastifyInstance;
@@ -41,12 +30,11 @@ describe('MyController Integration Tests', () => {
 			ns: asValue(notificationServiceMock as INotificationService),
 		});
 		await fastify.ready();
-		await fastify.listen({port: 1337});
 		database = fastify.database;
 	});
 	afterEach(async () => {
 		await fastify.close();
-	}, 30_000);
+	});
 
 	it('ProcessOrderShouldReturn', async () => {
 		const client = supertest(fastify.server);

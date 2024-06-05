@@ -1,24 +1,44 @@
-import process from 'node:process';
-import {$} from 'zx';
+import pg from 'pg';
+import {drizzle} from 'drizzle-orm/node-postgres';
+import {afterEach} from 'vitest';
+import {sql, getTableName} from 'drizzle-orm';
+import * as schema from '@/db/schema.js';
+import {CONFIG} from '@/configuration/index.js';
 
-const DOCKER_PROJECT = 'merjane-test';
-const DOCKER_COMPOSE_PATH = './docker/docker-compose-test.yml';
-const TEST_ENV_FILE = process.env['CONFIG_PATH'];
+const databaseConfig = CONFIG.get('db');
 
-export async function setupIntegrationTest() {
-	try {
-		await $`docker compose -p ${DOCKER_PROJECT} --env-file ${TEST_ENV_FILE} -f ${DOCKER_COMPOSE_PATH} up -d --wait`;
-		await $`echo initial delay && sleep 1`;
-		await $`pnpm drizzle:migrate`;
-	} catch (error) {
-		console.error(error);
-		await teardownIntegrationTest();
-		throw error;
-	}
-}
+afterEach(async () => {
+	const client = new pg.Client({
+		connectionString: databaseConfig.url,
+	});
+	await client.connect();
+	const database = drizzle(client, {
+		schema,
+		logger: true,
+	});
+	console.log('🗑️ Emptying the entire database');
 
-export async function teardownIntegrationTest() {
-	console.log('[globalTeardown] Stopping docker test env...');
+	const tables = [schema.ordersToProducts, schema.orders, schema.products];
 
-	await $`docker compose -p ${DOCKER_PROJECT} --env-file ${TEST_ENV_FILE} -f ${DOCKER_COMPOSE_PATH} down -v`;
-}
+	console.log();
+
+	const queries = tables.map(table => getTableName(table)).map(tableName => {
+		console.log(`🧨 Preparing delete query for table: ${tableName}`);
+		return sql.raw(`DELETE FROM ${tableName};`);
+	});
+
+	console.log('🛜 Sending delete queries');
+
+	await database.transaction(async trx => {
+		await Promise.all(
+			queries.map(async query => {
+				if (query) {
+					await trx.execute(query);
+				}
+			}),
+		);
+	});
+
+	console.log('✅ Database emptied');
+});
+
