@@ -1,31 +1,31 @@
 import {relations} from 'drizzle-orm';
 import {
-	integer, pgTable, serial, varchar, date,
-	primaryKey,
-} from 'drizzle-orm/pg-core';
+	text, integer, sqliteTable, primaryKey,
+} from 'drizzle-orm/sqlite-core';
+
 // Declaring enum in database
-export const products = pgTable('products', {
-	id: serial('id').primaryKey(),
+export const products = sqliteTable('products', {
+	id: integer('id').notNull().primaryKey(),
 	leadTime: integer('lead_time').notNull(),
 	available: integer('available').notNull(),
-	type: varchar('type', {length: 256}).notNull(),
-	name: varchar('name', {length: 256}).notNull(),
-	expiryDate: date('expiry_date', {mode: 'date'}),
-	seasonStartDate: date('season_start_date', {mode: 'date'}),
-	seasonEndDate: date('season_end_date', {mode: 'date'}),
+	type: text('type').notNull(),
+	name: text('name').notNull(),
+	expiryDate: integer('expiry_date', {mode: 'timestamp_ms'}),
+	seasonStartDate: integer('season_start_date', {mode: 'timestamp_ms'}),
+	seasonEndDate: integer('season_end_date', {mode: 'timestamp_ms'}),
 });
 
 export type Product = typeof products.$inferSelect;
 export type ProductInsert = typeof products.$inferInsert;
 
-export const orders = pgTable('orders', {
-	id: serial('id').primaryKey().notNull(),
+export const orders = sqliteTable('orders', {
+	id: integer('id').notNull().primaryKey(),
 });
 
 export type Order = typeof orders.$inferSelect;
 export type OrderInsert = typeof orders.$inferInsert;
 
-export const ordersToProducts = pgTable('orders_to_products', {
+export const ordersToProducts = sqliteTable('orders_to_products', {
 	orderId: integer('order_id').references(() => orders.id).notNull(),
 	productId: integer('product_id').references(() => products.id).notNull(),
 }, t => ({

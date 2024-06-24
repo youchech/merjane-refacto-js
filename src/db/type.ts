@@ -1,5 +1,5 @@
-import {type QueryResultHKT, type PgDatabase} from 'drizzle-orm/pg-core';
+import {type BetterSQLite3Database} from 'drizzle-orm/better-sqlite3';
 import type * as schema from './schema.js';
 
-export type Database = PgDatabase<QueryResultHKT, typeof schema>;
+export type Database = BetterSQLite3Database<typeof schema>;
 

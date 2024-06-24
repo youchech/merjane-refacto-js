@@ -11,8 +11,7 @@ dotenv.config(dotenvPath ? {path: dotenvPath} : undefined);
 
 export default defineConfig({
 	schema: path.resolve(__dirname, 'schema.ts'),
-	out: path.resolve(__dirname, 'migrations'),
-	dialect: 'postgresql',
+	dialect: 'sqlite',
 	dbCredentials: {
 		url: process.env['DB_URI']!,
 	},

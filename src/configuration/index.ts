@@ -30,7 +30,7 @@ export const CONFIG = dotEnvConvict({
 		url: {
 			doc: 'Database connection uri',
 			format: String,
-			default: null as unknown as string,
+			default: './database.db',
 			env: 'DB_URI',
 		},
 	},

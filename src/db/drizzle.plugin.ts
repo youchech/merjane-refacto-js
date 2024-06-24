@@ -1,7 +1,7 @@
 import {type FastifyPluginAsync} from 'fastify';
 import fastifyPlugin from 'fastify-plugin';
-import {drizzle} from 'drizzle-orm/node-postgres';
-import pg from 'pg';
+import SqliteDatabase from 'better-sqlite3';
+import {drizzle} from 'drizzle-orm/better-sqlite3';
 import {CONFIG} from '../configuration/index.js';
 import * as schema from './schema.js';
 import {type Database} from './type.js';
@@ -16,10 +16,8 @@ const databaseConfig = CONFIG.get('db');
 const appConfig = CONFIG.get('app');
 export const drizzlePlugin: FastifyPluginAsync = fastifyPlugin(
 	async server => {
-		const pool = new pg.Pool({
-			connectionString: databaseConfig.url,
-		});
-		const database = drizzle(pool, {
+		const sqlite = new SqliteDatabase(databaseConfig.url);
+		const database = drizzle(sqlite, {
 			schema,
 			...(appConfig.env === 'PROD' ? {} : {logger: true}),
 		});
@@ -28,9 +26,9 @@ export const drizzlePlugin: FastifyPluginAsync = fastifyPlugin(
 		server.decorate('database', database);
 
 		server.addHook('onClose', async () => {
-			console.log('Closing database connection pool');
-			await pool.end();
-			console.log('Closed database connection pool');
+			server.log.info('Closing database connection pool');
+			sqlite.close();
+			server.log.info('Closed database connection pool');
 		});
 	},
 );
