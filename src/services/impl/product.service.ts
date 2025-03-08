@@ -45,4 +45,14 @@ export class ProductService {
 			await this.db.update(products).set(p).where(eq(products.id, p.id));
 		}
 	}
+
+	public async handleProduct(p: Product): Promise<void> {
+		if (p.type === 'NORMAL') {
+			await this.notifyDelay(p.leadTime, p);
+		} else if (p.type === 'SEASONAL') {
+			await this.handleSeasonalProduct(p);
+		} else if (p.type === 'EXPIRABLE') {
+			await this.handleExpiredProduct(p);
+		}
+	}
 }

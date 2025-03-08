@@ -39,45 +39,7 @@ export const myController = fastifyPlugin(async server => {
 
 		if (productList) {
 			for (const {product: p} of productList) {
-				switch (p.type) {
-					case 'NORMAL': {
-						if (p.available > 0) {
-							p.available -= 1;
-							await dbse.update(products).set(p).where(eq(products.id, p.id));
-						} else {
-							const {leadTime} = p;
-							if (leadTime > 0) {
-								await ps.notifyDelay(leadTime, p);
-							}
-						}
-
-						break;
-					}
-
-					case 'SEASONAL': {
-						const currentDate = new Date();
-						if (currentDate > p.seasonStartDate! && currentDate < p.seasonEndDate! && p.available > 0) {
-							p.available -= 1;
-							await dbse.update(products).set(p).where(eq(products.id, p.id));
-						} else {
-							await ps.handleSeasonalProduct(p);
-						}
-
-						break;
-					}
-
-					case 'EXPIRABLE': {
-						const currentDate = new Date();
-						if (p.available > 0 && p.expiryDate! > currentDate) {
-							p.available -= 1;
-							await dbse.update(products).set(p).where(eq(products.id, p.id));
-						} else {
-							await ps.handleExpiredProduct(p);
-						}
-
-						break;
-					}
-				}
+				await ps.handleProduct(p);
 			}
 		}
 
